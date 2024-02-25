@@ -80,9 +80,6 @@ class AddressBook(UserDict):
         for name, record in self.data.items():
             buffer_record = Record(name)
             # The 'buffer_record' is needed to keep the original date.
-            
-            #for phone in record.phones:
-                #buffer_record.add_phone(phone.value)
 
             try:
                 now_date = datetime.today().date()

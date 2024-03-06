@@ -13,7 +13,8 @@ def input_error(func):
             return f'{error}'
         except Exception as error:
             return f'{error}'
-
+        finally:
+            pass
     return inner
 
 
@@ -27,62 +28,68 @@ def parse_input(user_input):
         cmd, *args = user_input.split()
         cmd = cmd.strip().lower()
     else:
-        raise ValueError('Error: input is empty')
+        raise ValueError('Error: Input is empty\n')
     
     return cmd, *args
 
 
 @input_error
-def add_contact(args: list, book: AddressBook):
-# The first parameter by method is list: 'name', 'phone(s)' and may be 'birthday'.
-    
-    if len(args) > 1: 
-        record = Record(args[0])
-        args, *args = args
-        # This is Python -_:)_-
-
-        for arg in args:
-            if arg:
-                record.add_phone(arg)
-                #raise ValueError("Warning: the argument isn't phone")
-        #record.add_birthday(args[-1])
-        #raise ValueError("Warning: the argument isn't phone or birthday party.")
-    elif len(args) > 0 and args[0]:
-        record = Record(args[0])
-            
+def add_contact(args, book: AddressBook):
+    message = ""
+    if len(args) > 0:
+        name, *args = args
+        phone = None
+        if args and len(args) > 0:
+            phone, *_ = args
+        record = book.find(name)
+        if record is None:
+            record = Record(name)
+            book.add_record(record)
+            message = "Contact added.\n"
+        else:
+            message = "The contact exists in the book phone.\n"
+        if phone:
+            record.add_phone(phone)
+            message = f"{message}Phone added.\n"
     else:
-        raise ValueError('Error: no arguments.')
+        raise ValueError('Error: Contact name must not be empty.')
     
-    book.data[record.name.value] = record
-    return 'Contact added.'
+    return message
 
 
 @input_error
 def change_contact(args, book: AddressBook):
 # Updates an existing contact or adds a new one.
-    
-    if args and args[0] in book.data.keys():
-        name, *phones = args
-        book.data[name].edit_phone(phones[0], phones[1])
-        if book.data[name].find_phone(phones[1]):
-            return 'Contact updated.'
+    if len(args) > 0:
+        name, *args = args
+        phone = None
+        new_phone = None
+        record = book.find(name)
+        if record:
+            if len(args) > 1:
+                phone, new_phone, *_ = args
+                record.edit_phone(phone, new_phone)
+                return 'Phone updated.'
+            elif len(args) > 0:
+                phone, *_ = args
+                record.add_phone(phone)
+                return 'Phone added.'
+            else:
+                raise ValueError('Warning: New phone number not specified.')
         else:
-            raise "Warning: Contact isn't updated."
+            return add_contact([name, *args], book)
     else:
-        return add_contact(args, book)
+        raise ValueError ('Warning: Contact name is empty.')
 
 
 @input_error
 def show_phone(name: str, book: AddressBook):
-    #if name in book.data.keys():
     return (f'{name}: {[phone.value for phone in book.data[name].phones]}\n')
-    #else:
-        #raise ValueError (f'Warning: the phone by "{name}" isn\'t found.')
 
 
 @input_error
 def show_all(book: AddressBook):
-    return book.data.values()
+    return ''.join(repr(value) for value in book.data.values())
 
 
 @input_error
@@ -93,7 +100,7 @@ def add_birthday(args, book: AddressBook):
 
 @input_error
 def show_birthday(args, book: AddressBook):
-    name = args
+    name, *_ = args
     return book.date[name].birthday.value
 
 
@@ -101,75 +108,136 @@ def show_birthday(args, book: AddressBook):
 def show_birthdays(book: AddressBook):
     return  [f'{name}: {birthday}\n' for name, birthday in book.get_upcoming_birthdays()]
 
-def my_main(values):
+
+def main():
     book = AddressBook()
     #print("Welcome to the assistant bot!")
-    print(f"\n\n{values}")
     while True:
-        #user_input = input("Enter a command: ")
-        command, *args = parse_input(values)
-        #command, *args = parse_input(user_input)
+        for values in get_command():
+            print(f"\nget_command: {values}")
 
-        if command in ["close", "exit"]:
-            print("Good bye!")
-            break
+            #user_input = input("Enter a command: ")
+            command, *args = parse_input(values)
+            #command, *args = parse_input(user_input)
 
-        elif command == "hello":
-            print("How can I help you?")
+            if command in ["close", "exit"]:
+                print("Good bye!")
+                break
 
-        elif command == "add":
-            print(add_contact(args, book))
+            elif command == "hello":
+                print("How can I help you?")
 
-        elif command == "change":
-            print(change_contact(args, book))
+            elif command == "add":
+                print(add_contact(args, book))
 
-        elif command == "phone":
-            print(show_phone(args, book))
+            elif command == "change":
+                print(change_contact(args, book))
 
-        elif command == "all":
-            print(*[*show_all(book), '\n'])
+            elif command == "phone":
+                print(show_phone(args, book))
 
-        elif command == "add-birthday":
-            add_birthday(args, book)
+            #elif command == "all":
+                #print(*show_all(book), '\n')
 
-        elif command == "show-birthday":
-            print(show_birthday(args, book))
+            elif command == "add-birthday":
+                add_birthday(args, book)
 
-        elif command == "birthdays":
-            print(*show_birthdays(book))
+            elif command == "show-birthday":
+                print(show_birthday(args, book))
 
-        else:
-            print("Invalid command.")
+            elif command == "birthdays":
+                print(*show_birthdays(book))
+
+            else:
+                print("Invalid command.")
+            print(show_all(book))
         break
 
-#if __name__ == '__main__':
-t_arguments = [
-        "",
-        " ",
-        "  ",
-        "   ",
-        "    ",
-        ".",
-        ". . ",
-        ". . . ",
-        ". . . .",
-        "Joy1",
-        "Joy2 ",
-        "Joy3 0000",
-        "Joy4 1111111111",
-        "Joy5 55555555555555",
-        "Joy6 01.01.1990",
-        "Joy7 0000 01.01.1990",
-        "Joy8 1111111111 01.01.1990",
-        "Joy10 55555555555555 01.01.1990",
-        "Joy11 1111111111 1111111111 ",
-        "Joy11 1111111111 2222222222 ",
-        "Joy12 1111111111 1111111111 01.01.1990",
-        "Joy13 1111111111 01.01.1990 1111111111",
-        "Joy14 01.01.1990 1111111111 1111111111"]
 
-commands = [
+def get_command():
+    arguments = [
         # "",
+        # " ",
+        # "  ",
+        # "   ",
+        # "    ",
+        # "~",
+        # "~ ~",
+        # "~ ~ ~",
+        # "~ ~ ~ ~",
+        # "Joy1",
+        # "Joy1 ",
+        # "Joy1 9876",
+        # "Joy1 1111111111",
+        # "Joy2 2222222222",
+        # "Joy3 3333333333",
+        # "Joy4 44444444444",
+        # "Joy1 1111133333",
+        # "Joy4 4444444444",
+        # "Joy1 9999999999999999",
+        # "Joy1 01.01.1990",
+        # "Joy1 0000 01.01.1990",
+        # "Joy1 1111111111 01.01.1990",
+        # "Joy1 9999999999999999 01.01.1990",
+        # "Joy1 1111111111 1111111111 ",
+        # "Joy1 1111111111 1111122222 ",
+        # "Joy1 1111111111 1111111111 01.01.1990",
+        # "Joy1 1111111111 01.01.1990 1111111111",
+        # "Joy1 01.01.1990 1111111111 1111111111",
+
+        "add ~",
+        "add ~ ~",
+        "add ~ ~ ~",
+        "add ~ ~ ~ ~",
+        "add Joy1",
+        "add Joy1 ",
+        "add Joy1 9876",
+        "add Joy1 1111111111",
+        "add Joy2 2222222222",
+        "add Joy3 3333333333",
+        "add Joy4 44444444444",
+        "add Joy1 1111133333",
+        "add Joy4 4444444444",
+        "add Joy1 9999999999999999",
+        "add Joy1 01.01.1990",
+        "add Joy1 0000 01.01.1990",
+        "add Joy1 1111111111 01.01.1990",
+        "add Joy1 9999999999999999 01.01.1990",
+        "add Joy1 1111111111 1111111111 ",
+        "add Joy1 1111111111 1111122222 ",
+        "add Joy1 1111111111 1111111111 01.01.1990",
+        "add Joy1 1111111111 01.01.1990 1111111111",
+        "add Joy1 01.01.1990 1111111111 1111111111",
+        
+        "change Joy8 8888888888",
+        "change Joy8 8888888888 8880000888",
+        "change ~",
+        "change ~ ~",
+        "change ~ ~ ~",
+        "change ~ ~ ~ ~",
+        "change Joy1",
+        "change Joy1 ",
+        "change Joy1 9876",
+        "change Joy4 1111111111",
+        "change Joy3 2222222222",
+        "change Joy2 3333333333",
+        "change Joy1 44444444444",
+        "change Joy1 1111133333",
+        "change Joy4 4444444444",
+        "change Joy1 9999999999999999",
+        "change Joy1 01.01.1990",
+        "change Joy1 0000 01.01.1990",
+        "change Joy1 1111111111 01.01.1990",
+        "change Joy1 9999999999999999 01.01.1990",
+        "change Joy1 1111111111 1111111111 ",
+        "change Joy1 1111111111 1111122222 ",
+        "change Joy1 1111111111 1111111111 01.01.1990",
+        "change Joy1 1111111111 01.01.1990 1111111111",
+        "change Joy1 01.01.1990 1111111111 1111111111",
+        ]
+
+    commands = [
+        "",
         # " ",
         # "  ",
         # "   ",
@@ -180,21 +248,20 @@ commands = [
         # "close ",
         # "exit ",
         # "hello ",
-        "add ",
-        "change ",
+        # "add ",
+        # "change ",
         # "phone ",
         # "all ",
         # "add-birthday ",
         # "show-birthday ",
         # "birthdays "
         ]
-my_input = ''
+    for command in commands:
+        my_input = f'{command}'
+        #yield my_input
+        for argument in arguments:
+            my_input = f'{command}{argument}'
+            yield my_input
 
-#my_main('add Joy9 1111111111 1111111111 ')
-
-for command in commands:
-    my_input = f'{command}'
-    my_main(my_input)
-    for argument in t_arguments:
-        my_input = f'{command}{argument}'
-        my_main(my_input)
+if __name__ == "__main__":
+    main()

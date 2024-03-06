@@ -15,19 +15,15 @@ class Field:
     @value.setter
     def value(self, value):
         self.__value = value
-    
-    @classmethod
-    def validation(cls, value: str):
-        pass
 
     def __str__(self):
-        return self.value
+        return f'Field: {self.value}'
     
-    def __repr__(self) -> str:
+    def __repr__(self):
         return f"Field(value={self.value})"
     
     def __call__(self):
-        return self.value
+         return self.value
 
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, Field):
@@ -60,105 +56,142 @@ class Field:
 
 class Name(Field):
     def __init__(self, value: str):
-        if value:
-            super().__init__(value)
+        self.value = value
+    
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, value: str):
+        if len(value.lstrip()):
+            self.__value = value
         else:
-            raise ValueError('Error: the entered contact name is empty.')
+            raise ValueError('Error: The entered contact name is empty.\n')
 
     def __str__(self):
-        return super().__str__()
+        return f'Name: {self.value}'
     
-    def __repr__(self) -> str:
-        return f"Name(value={super().value})"
+    def __repr__(self):
+        return f"Name(value={self.value})"
     
     def __call__(self):
-        return super().value
+        return self.value
 
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, Name):
             return NotImplemented
-        return super().value == __value
+        return self.value == __value.value
 
     def __ne__(self, __value: object) -> bool:
-        return not super().__eq__(__value)
+        return not self.__eq__(__value)
 
     def __lt__(self, __value: object) -> bool:
         if not isinstance(__value, Name):
             return NotImplemented
-        return super().value < __value
+        return self.value < __value.value
 
     def __gt__(self, __value: object) -> bool:
         if not isinstance(__value, Name):
             return NotImplemented
-        return super().value > __value
+        return self.value > __value.value
 
     def __le__(self, __value: object) -> bool:
         if not isinstance(__value, Name):
             return NotImplemented
-        return super().value <= __value
+        return self.value <= __value.value
 
     def __ge__(self, __value: object) -> bool:
         if not isinstance(__value, Name):
             return NotImplemented
-        return super().value >= __value
+        return self.value >= __value.value
 
 
 class Phone(Field):
     def __init__(self, value: str):
-        super().__init__(value)
+        self.value = value
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, value):
+        if re.fullmatch(r'\d{10}', value):
+            self.__value = value
+        else:
+            raise ValueError (f'Error: The number of digits in the number does not correspond to 10: {value}\n')
     
     @classmethod
     def validation(cls, value: str):
-        if cls.value == value:
-            return cls.__validation(value)
+        if value:
+            cls.__validation(cls, value)
+            if cls.value:
+                return value
+        return False
     
     def __validation(self, value: str):
+        self.__value = None
         if re.fullmatch(r'\d{10}', value):
-            super().__init__(value)
-        raise ValueError (f'The number of digits in the number does not correspond to 10.\n{value}\n')
-
+            self.__value = value
+        else:
+            raise ValueError (f'Error: The number of digits in the number does not correspond to 10.{value}\n')
+        
     def __str__(self):
-        return super().value
+        return f'Phone: {self.value}'
     
     def __repr__(self) -> str:
-        return f"Phone(value={super().value})"
+        return f"Phone(value={self.value})"
     
     def __call__(self):
-        return super()
+        return self()
 
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, Phone):
             return NotImplemented
-        return super().value == __value
+        return self.value == __value.value
 
     def __ne__(self, __value: object) -> bool:
-        return not super().__eq__(__value)
+        return not self.__eq__(__value)
 
     def __lt__(self, __value: object) -> bool:
         if not isinstance(__value, Phone):
             return NotImplemented
-        return super().value < __value
+        return self.value < __value.value
 
     def __gt__(self, __value: object) -> bool:
         if not isinstance(__value, Phone):
             return NotImplemented
-        return super().value > __value
+        return self.value > __value.value
 
     def __le__(self, __value: object) -> bool:
         if not isinstance(__value, Phone):
             return NotImplemented
-        return super().value <= __value
+        return self.value <= __value.value
 
     def __ge__(self, __value: object) -> bool:
         if not isinstance(__value, Phone):
             return NotImplemented
-        return super().value >= __value
+        return self.value >= __value.value
 
 
 class Birthday(Field):
     def __init__(self, value: str):
-        super().__init__(self.__validation(value))
-    
+        self.value = value
+
+    @property
+    def value(self):
+        return self.__value
+
+    @value.setter
+    def value(self, value):
+        try:
+            self.__value = datetime.strptime(value, '%d.%m.%Y').strftime('%d.%m.%Y')
+            # date_birthday = datetime.strptime(value, '%d.%m.%Y')
+            # return date_birthday.strftime('%d.%m.%Y')
+        except ValueError:
+            raise ValueError("Error: Invalid date format. Use DD.MM.YYYY\n")
+
     @classmethod
     def validation(cls, value: str):
         return cls.__validation(value)
@@ -168,44 +201,41 @@ class Birthday(Field):
             date_birthday = datetime.strptime(value, '%d.%m.%Y')
             return date_birthday.strftime('%d.%m.%Y')
         except ValueError:
-            raise ValueError("Invalid date format. Use DD.MM.YYYY")
+            raise ValueError("Error: Invalid date format. Use DD.MM.YYYY\n")
 
     def __str__(self):
-        return f"Birthday party: {super().value}"
+        return f"Birthday: {self.value}"
     
     def __repr__(self) -> str:
-        return f"Birthday(value={super().value})"
-    
-    def __call__(self):
-        return super().value
+        return f"Birthday(value={self.value} (format='%d.%m.%Y'))"
 
     def __eq__(self, __value: object) -> bool:
         if not isinstance(__value, Birthday):
             return NotImplemented
-        return super().value == __value
+        return self.value == __value.value
 
     def __ne__(self, __value: object) -> bool:
-        return not super().__eq__(__value)
+        return not self.__eq__(__value)
 
     def __lt__(self, __value: object) -> bool:
         if not isinstance(__value, Birthday):
             return NotImplemented
-        return super().value < __value
+        return self.value < __value.value
 
     def __gt__(self, __value: object) -> bool:
         if not isinstance(__value, Birthday):
             return NotImplemented
-        return super().value > __value
+        return self.value > __value.value
 
     def __le__(self, __value: object) -> bool:
         if not isinstance(__value, Birthday):
             return NotImplemented
-        return super().value <= __value
+        return self.value <= __value.value
 
     def __ge__(self, __value: object) -> bool:
         if not isinstance(__value, Birthday):
             return NotImplemented
-        return super().value >= __value
+        return self.value >= __value.value
 
 
 class Record:
@@ -214,44 +244,38 @@ class Record:
         self.phones = []
         self.birthday = None
 
-    @property
-    def name(self):
-        return self.__name
-    
-    @name.setter
-    def name(self, value):
-        self.__name = value
-    
     def add_phone(self, phone: str):
-        self.phones.append(Phone(phone))
+        new_phone = Phone(phone)
+        if not new_phone in self.phones:
+            self.phones.append(new_phone)
+        else:
+            raise ValueError('Warning: The contact contains a number.\n')
     
     def remove_phone(self, phone: str):
         self.phones.remove(Phone(phone))
     
     def edit_phone(self, phone: str, new_phone: str):
-        self.phones = [Phone(new_phone) if item == phone else item for item in self.phones]
+        _phone = Phone(phone)
+        _new_phone = Phone(new_phone)
+        if self.find_phone(new_phone):
+            raise ValueError(f'{new_phone} is in the list of numbers of the contact.\n')
+        elif self.find_phone(phone):
+            self.phones = list(map(lambda item: _new_phone if item == _phone else item, self.phones))
+        else:
+            raise ValueError(f"{phone} is'n in the list of numbers of the contact.\n")
    
-    def find_phone(self, phone: str):
-        for item in self.phones:
-            if item == phone:
-                phone = item
-                break
-        return phone
+    def find_phone(self, user_phone: str) -> Phone:
+        _user_phone = Phone(user_phone)
+        if user_phone:
+            #found_phone = self.phones[self.phones.index(_user_phone)]
+            found_phone = list(filter(lambda phone: phone==_user_phone, self.phones))
+            return found_phone
+        return None
     
     def add_birthday(self, birthday: str):
         self.birthday = Birthday(birthday)
     
-    def __str__(self):
-        return f"Record a contact: {self.name}, \
-            phones: {'; '.join(p.value for p in self.phones)}, \
-            birthday: {self.birthday if self.birthday else ''}"
-    
-    def __repr__(self) -> str:
-        return f"Record(value={self.name}, \
-        phones={'; '.join(p for p in self.phones)}, \
-        birthday={self.birthday if self.birthday else ''}"
-    
-    def __call__(self):
+    def __call__(self) -> Name:
         return self.name
 
     def __eq__(self, other: object) -> bool:
@@ -266,41 +290,38 @@ class Record:
 
     def __ne__(self, __value: object) -> bool:
         return not self.__eq__(__value)
-
-    # def __lt__(self, __value: object) -> bool:
-    #     if not isinstance(__value, Record):
-    #         return NotImplemented
-    #     return self.value < __value
-
-    # def __gt__(self, __value: object) -> bool:
-    #     if not isinstance(__value, Record):
-    #         return NotImplemented
-    #     return self.value > __value
-
-    # def __le__(self, __value: object) -> bool:
-    #     if not isinstance(__value, Record):
-    #         return NotImplemented
-    #     return self.value <= __value
-
-    # def __ge__(self, __value: object) -> bool:
-    #     if not isinstance(__value, Record):
-    #         return NotImplemented
-    #     return self.value >= __value
+    
+    def __str__(self):
+        return f"Record a contact: {self.name}, \
+phones: {'; '.join(p.value for p in self.phones)} \
+birthday: {self.birthday if self.birthday else 'format=DD.MM.YYYY'}\n"
+    
+    def __repr__(self):
+        return f"Record(value={self.name}, \
+phones={'; '.join(p.value for p in self.phones)}, \
+birthday={self.birthday if self.birthday else 'format(%d.%m.%Y)'}\n"
 
 
 class AddressBook(UserDict):
     def add_record(self, record: Record):
-        self.data[record.name.value] = record
+        if not isinstance(record, Record):
+            return NotImplemented
+        if record.name.value in self.data:
+            raise ValueError('Warning: Contact exists.\n')
+        else:
+            self.data[record.name.value] = record
     
-    def find(self, name: str):
-        if self.data[name]:
-            return self.data[name]
-        return None
+    def find(self, name: str) -> Record:
+        if name:
+            if name in self.data:
+                return self.data[name]
+            return None
+        raise ValueError('Error: Contact name is empty.\n')
     
     def delete(self, name: str):
         self.data.pop(name)
     
-    def get_upcoming_birthdays(self):
+    def get_upcoming_birthdays(self) -> dict:
         upcoming_birthdays = []
 
         for name, record in self.data.items():

@@ -84,7 +84,14 @@ def change_contact(args, book: AddressBook):
 
 @input_error
 def show_phone(name: str, book: AddressBook):
-    return (f'{name}: {[phone.value for phone in book.data[name].phones]}\n')
+    if isinstance(name, str) and name and (name in book.data):
+        record = book.data[name]
+        if isinstance(record, Record):
+            return (f'{name}: {', '.join(phone.value for phone in record.phones)}\n')
+        else:
+            raise TypeError("Error: The resulting contact format does not match the expected formatю\n")
+    else:
+        raise ValueError("Warning: No contact.\n")
 
 
 @input_error
@@ -134,7 +141,7 @@ def main():
                 print(change_contact(args, book))
 
             elif command == "phone":
-                print(show_phone(args, book))
+                print(show_phone(args[0], book))
 
             #elif command == "all":
                 #print(*show_all(book), '\n')
@@ -155,8 +162,8 @@ def main():
 
 
 def get_command():
-    arguments = [
-        # "",
+    arguments1 = [
+        "",
         # " ",
         # "  ",
         # "   ",
@@ -184,7 +191,8 @@ def get_command():
         # "Joy1 1111111111 1111111111 01.01.1990",
         # "Joy1 1111111111 01.01.1990 1111111111",
         # "Joy1 01.01.1990 1111111111 1111111111",
-
+        ]
+    arguments2 = [
         "add ~",
         "add ~ ~",
         "add ~ ~ ~",
@@ -207,8 +215,8 @@ def get_command():
         "add Joy1 1111111111 1111122222 ",
         "add Joy1 1111111111 1111111111 01.01.1990",
         "add Joy1 1111111111 01.01.1990 1111111111",
-        "add Joy1 01.01.1990 1111111111 1111111111",
-        
+        "add Joy1 01.01.1990 1111111111 1111111111",]
+    arguments3 = [
         "change Joy8 8888888888",
         "change Joy8 8888888888 8880000888",
         "change ~",
@@ -235,7 +243,37 @@ def get_command():
         "change Joy1 1111111111 01.01.1990 1111111111",
         "change Joy1 01.01.1990 1111111111 1111111111",
         ]
+    arguments4 = [
+        "phone Joy8 8888888888",
+        "phone Joy8 8888888888 8880000888",
+        "phone ~",
+        "phone ~ ~",
+        "phone ~ ~ ~",
+        "phone ~ ~ ~ ~",
+        "phone Joy1",
+        "phone Joy1 ",
+        "phone Joy1 9876",
+        "phone Joy4 1111111111",
+        "phone Joy3 2222222222",
+        "phone Joy2 3333333333",
+        "phone Joy1 44444444444",
+        "phone Joy1 1111133333",
+        "phone Joy4 4444444444",
+        "phone Joy1 9999999999999999",
+        "phone Joy1 01.01.1990",
+        "phone Joy1 0000 01.01.1990",
+        "phone Joy1 1111111111 01.01.1990",
+        "phone Joy1 9999999999999999 01.01.1990",
+        "phone Joy1 1111111111 1111111111 ",
+        "phone Joy1 1111111111 1111122222 ",
+        "phone Joy1 1111111111 1111111111 01.01.1990",
+        "phone Joy1 1111111111 01.01.1990 1111111111",
+        "phone Joy1 01.01.1990 1111111111 1111111111",
 
+        "phone Jo16",
+        "phone 24Joy1 1111111111 01.01.1990 1111111111",
+        "phone Joy1 01.01.1990 1111111111 1111111111",
+        ]
     commands = [
         "",
         # " ",
@@ -256,12 +294,20 @@ def get_command():
         # "show-birthday ",
         # "birthdays "
         ]
-    for command in commands:
-        my_input = f'{command}'
+    #for command in commands:
+        #my_input = f'{command}'
         #yield my_input
-        for argument in arguments:
-            my_input = f'{command}{argument}'
-            yield my_input
+    for argument in arguments2:
+        my_input = f'{argument}'
+        yield my_input
+        # for argument in arguments3:
+        #     my_input = f'{command}{argument}'
+        #     yield my_input
+    for a in range(len(arguments4)):
+        #my_input = f'{arguments2[a]}'
+        #yield my_input
+        my_input = f'{arguments4[a]}'
+        yield my_input
 
 if __name__ == "__main__":
     main()

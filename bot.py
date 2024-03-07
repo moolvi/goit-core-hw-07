@@ -89,14 +89,17 @@ def show_phone(name: str, book: AddressBook):
         if isinstance(record, Record):
             return (f'{name}: {', '.join(phone.value for phone in record.phones)}\n')
         else:
-            raise TypeError("Error: The resulting contact format does not match the expected formatю\n")
+            raise TypeError("Error: The resulting contact format does not match the expected formatю.n")
     else:
         raise ValueError("Warning: No contact.\n")
 
 
 @input_error
 def show_all(book: AddressBook):
-    return ''.join(repr(value) for value in book.data.values())
+    if isinstance(book, AddressBook) and book and book.data:
+        return ''.join(str(value) for value in book.data.values())
+    else:
+        raise TypeError("Error: The adressbook doesn't fit the format.\n")
 
 
 @input_error
@@ -143,8 +146,8 @@ def main():
             elif command == "phone":
                 print(show_phone(args[0], book))
 
-            #elif command == "all":
-                #print(*show_all(book), '\n')
+            elif command == "all":
+                print(show_all(book), '\n')
 
             elif command == "add-birthday":
                 add_birthday(args, book)
@@ -157,7 +160,7 @@ def main():
 
             else:
                 print("Invalid command.")
-            print(show_all(book))
+            #print(show_all(book))
         break
 
 
@@ -303,11 +306,12 @@ def get_command():
         # for argument in arguments3:
         #     my_input = f'{command}{argument}'
         #     yield my_input
-    for a in range(len(arguments4)):
-        #my_input = f'{arguments2[a]}'
-        #yield my_input
-        my_input = f'{arguments4[a]}'
-        yield my_input
+    # for a in range(len(arguments4)):
+    #     #my_input = f'{arguments2[a]}'
+    #     #yield my_input
+    #     my_input = f'{arguments4[a]}'
+    #     yield my_input
+    yield 'all '
 
 if __name__ == "__main__":
     main()

@@ -104,19 +104,40 @@ def show_all(book: AddressBook):
 
 @input_error
 def add_birthday(args, book: AddressBook):
-    name, birthday = args
-    book.date[name].add_birthday(birthday)
+    if len(args) > 1:
+        name, birthday = args
+        if not(isinstance(name, str) and name):
+            raise TypeError("Warning: Contact name must not be empty.\n")
+        if isinstance(book, AddressBook) and book and book.data and isinstance(book.data[name], Record):
+            book.data[name].add_birthday(birthday)
+        else:
+            raise TypeError("Error: The adressbook doesn't fit the format.\n")
+    else:
+        raise TypeError("Warning: Missing contact name or date of birthday.\n")
 
 
 @input_error
 def show_birthday(args, book: AddressBook):
-    name, *_ = args
-    return book.date[name].birthday.value
+    if len(args) > 1:
+        name, *_ = args
+        if not(isinstance(name, str) and name):
+            raise TypeError("Warning: Contact name must not be empty.\n")
+        if isinstance(book, AddressBook) and book and book.data and isinstance(book.data[name], Record):
+            return book.data[name].birthday
+        else:
+            raise TypeError("Error: The adressbook doesn't fit the format.\n")
+    else:
+        raise TypeError("Warning: Missing contact name or date of birthday.\n")
 
 
 @input_error
 def show_birthdays(book: AddressBook):
-    return  [f'{name}: {birthday}\n' for name, birthday in book.get_upcoming_birthdays()]
+    result = ''
+    if isinstance(book, AddressBook):
+        for item in book.get_upcoming_birthdays():
+            result = result.join(f'{key}: {item[key]}' for key in item)
+        return result
+    raise TypeError("Error: The adressbook doesn't fit the format.\n")
 
 
 def main():
@@ -126,9 +147,12 @@ def main():
         for values in get_command():
             print(f"\nget_command: {values}")
 
+            user_input = values
             #user_input = input("Enter a command: ")
-            command, *args = parse_input(values)
-            #command, *args = parse_input(user_input)
+            #command, *args = parse_input(values)
+            if (" " not in user_input):
+                user_input = f'{user_input} '
+            command, *args = parse_input(user_input)
 
             if command in ["close", "exit"]:
                 print("Good bye!")
@@ -156,162 +180,12 @@ def main():
                 print(show_birthday(args, book))
 
             elif command == "birthdays":
-                print(*show_birthdays(book))
+                print(show_birthdays(book))
 
             else:
                 print("Invalid command.")
-            #print(show_all(book))
         break
-
-
-def get_command():
-    arguments1 = [
-        "",
-        # " ",
-        # "  ",
-        # "   ",
-        # "    ",
-        # "~",
-        # "~ ~",
-        # "~ ~ ~",
-        # "~ ~ ~ ~",
-        # "Joy1",
-        # "Joy1 ",
-        # "Joy1 9876",
-        # "Joy1 1111111111",
-        # "Joy2 2222222222",
-        # "Joy3 3333333333",
-        # "Joy4 44444444444",
-        # "Joy1 1111133333",
-        # "Joy4 4444444444",
-        # "Joy1 9999999999999999",
-        # "Joy1 01.01.1990",
-        # "Joy1 0000 01.01.1990",
-        # "Joy1 1111111111 01.01.1990",
-        # "Joy1 9999999999999999 01.01.1990",
-        # "Joy1 1111111111 1111111111 ",
-        # "Joy1 1111111111 1111122222 ",
-        # "Joy1 1111111111 1111111111 01.01.1990",
-        # "Joy1 1111111111 01.01.1990 1111111111",
-        # "Joy1 01.01.1990 1111111111 1111111111",
-        ]
-    arguments2 = [
-        "add ~",
-        "add ~ ~",
-        "add ~ ~ ~",
-        "add ~ ~ ~ ~",
-        "add Joy1",
-        "add Joy1 ",
-        "add Joy1 9876",
-        "add Joy1 1111111111",
-        "add Joy2 2222222222",
-        "add Joy3 3333333333",
-        "add Joy4 44444444444",
-        "add Joy1 1111133333",
-        "add Joy4 4444444444",
-        "add Joy1 9999999999999999",
-        "add Joy1 01.01.1990",
-        "add Joy1 0000 01.01.1990",
-        "add Joy1 1111111111 01.01.1990",
-        "add Joy1 9999999999999999 01.01.1990",
-        "add Joy1 1111111111 1111111111 ",
-        "add Joy1 1111111111 1111122222 ",
-        "add Joy1 1111111111 1111111111 01.01.1990",
-        "add Joy1 1111111111 01.01.1990 1111111111",
-        "add Joy1 01.01.1990 1111111111 1111111111",]
-    arguments3 = [
-        "change Joy8 8888888888",
-        "change Joy8 8888888888 8880000888",
-        "change ~",
-        "change ~ ~",
-        "change ~ ~ ~",
-        "change ~ ~ ~ ~",
-        "change Joy1",
-        "change Joy1 ",
-        "change Joy1 9876",
-        "change Joy4 1111111111",
-        "change Joy3 2222222222",
-        "change Joy2 3333333333",
-        "change Joy1 44444444444",
-        "change Joy1 1111133333",
-        "change Joy4 4444444444",
-        "change Joy1 9999999999999999",
-        "change Joy1 01.01.1990",
-        "change Joy1 0000 01.01.1990",
-        "change Joy1 1111111111 01.01.1990",
-        "change Joy1 9999999999999999 01.01.1990",
-        "change Joy1 1111111111 1111111111 ",
-        "change Joy1 1111111111 1111122222 ",
-        "change Joy1 1111111111 1111111111 01.01.1990",
-        "change Joy1 1111111111 01.01.1990 1111111111",
-        "change Joy1 01.01.1990 1111111111 1111111111",
-        ]
-    arguments4 = [
-        "phone Joy8 8888888888",
-        "phone Joy8 8888888888 8880000888",
-        "phone ~",
-        "phone ~ ~",
-        "phone ~ ~ ~",
-        "phone ~ ~ ~ ~",
-        "phone Joy1",
-        "phone Joy1 ",
-        "phone Joy1 9876",
-        "phone Joy4 1111111111",
-        "phone Joy3 2222222222",
-        "phone Joy2 3333333333",
-        "phone Joy1 44444444444",
-        "phone Joy1 1111133333",
-        "phone Joy4 4444444444",
-        "phone Joy1 9999999999999999",
-        "phone Joy1 01.01.1990",
-        "phone Joy1 0000 01.01.1990",
-        "phone Joy1 1111111111 01.01.1990",
-        "phone Joy1 9999999999999999 01.01.1990",
-        "phone Joy1 1111111111 1111111111 ",
-        "phone Joy1 1111111111 1111122222 ",
-        "phone Joy1 1111111111 1111111111 01.01.1990",
-        "phone Joy1 1111111111 01.01.1990 1111111111",
-        "phone Joy1 01.01.1990 1111111111 1111111111",
-
-        "phone Jo16",
-        "phone 24Joy1 1111111111 01.01.1990 1111111111",
-        "phone Joy1 01.01.1990 1111111111 1111111111",
-        ]
-    commands = [
-        "",
-        # " ",
-        # "  ",
-        # "   ",
-        # "    ",
-        # ".",
-        # ". . ",
-        # ". . . ",
-        # "close ",
-        # "exit ",
-        # "hello ",
-        # "add ",
-        # "change ",
-        # "phone ",
-        # "all ",
-        # "add-birthday ",
-        # "show-birthday ",
-        # "birthdays "
-        ]
-    #for command in commands:
-        #my_input = f'{command}'
-        #yield my_input
-    for argument in arguments2:
-        my_input = f'{argument}'
-        yield my_input
-        # for argument in arguments3:
-        #     my_input = f'{command}{argument}'
-        #     yield my_input
-    # for a in range(len(arguments4)):
-    #     #my_input = f'{arguments2[a]}'
-    #     #yield my_input
-    #     my_input = f'{arguments4[a]}'
-    #     yield my_input
-    yield 'all '
+    
 
 if __name__ == "__main__":
     main()

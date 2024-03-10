@@ -186,9 +186,10 @@ class Birthday(Field):
     @value.setter
     def value(self, value):
         try:
-            self.__value = datetime.strptime(value, '%d.%m.%Y').strftime('%d.%m.%Y')
-            # date_birthday = datetime.strptime(value, '%d.%m.%Y')
-            # return date_birthday.strftime('%d.%m.%Y')
+            if value:
+                self.__value = datetime.strptime(value, '%d.%m.%Y').strftime('%d.%m.%Y')
+            else:
+                self.__value = None
         except ValueError:
             raise ValueError("Error: Invalid date format. Use DD.MM.YYYY\n")
 
@@ -242,8 +243,28 @@ class Record:
     def __init__(self, name: str):
         self.name = Name(name)
         self.phones = []
-        self.birthday = None
+        self.__birthday = None
+    
+    @property
+    def name(self):
+        return self.__name
+        
+    @name.setter
+    def name(self, value):
+        if isinstance(value, Name):
+            self.__name = value
+        else:
+            self.__name = Name(str(value))
 
+
+    @property
+    def birthday(self):
+        return self.__birthday
+        
+    @birthday.setter
+    def birthday(self, value: str):
+        self.__birthday = Birthday(value)
+    
     def add_phone(self, phone: str):
         new_phone = Phone(phone)
         if not new_phone in self.phones:
@@ -273,20 +294,22 @@ class Record:
         return None
     
     def add_birthday(self, birthday: str):
-        self.birthday = Birthday(birthday)
+        self.__birthday = Birthday(birthday)
     
     def __call__(self) -> Name:
         return self.name
 
     def __eq__(self, other: object) -> bool:
-        result = False
         if not isinstance(other, Record):
             return NotImplemented
-        result = (self.name == other.__name)
-        result = result and (len(self.phone) == len(other.phones))
-        result = result and (lambda a: True if self.phones[a]==other.phones[a] else False, range(len(other.phones)))
-        result = result (self.birthday == other.birthday)
-        return result
+        if not (self.name == other.name):
+            return  False
+        if not (len(self.phone) == len(other.phones)):
+            return  False
+        if not (self.birthday == other.birthday):
+            return False
+        if not self.phones == other.phones:
+            return False
 
     def __ne__(self, __value: object) -> bool:
         return not self.__eq__(__value)
@@ -303,6 +326,7 @@ birthday={self.birthday if self.birthday else 'format(%d.%m.%Y)'}\n"
 
 
 class AddressBook(UserDict):
+
     def add_record(self, record: Record):
         if not isinstance(record, Record):
             return NotImplemented
@@ -321,13 +345,11 @@ class AddressBook(UserDict):
     def delete(self, name: str):
         self.data.pop(name)
     
-    def get_upcoming_birthdays(self) -> dict:
+    def get_upcoming_birthdays(self):
         upcoming_birthdays = []
-
-        for name, record in self.data.items():
-            buffer_record = Record(name)
+        for record in self.data.values():
+            buffer_record = Record(record.name.value)
             # The 'buffer_record' is needed to keep the original date.
-
             try:
                 now_date = datetime.today().date()
                 date_user =  datetime.strptime(record.birthday.value, '%d.%m.%Y').replace(now_date.year).date()
@@ -341,7 +363,7 @@ class AddressBook(UserDict):
                     else:
                         buffer_record.add_birthday(date_user.strftime('%d.%m.%Y'))
 
-                    upcoming_birthdays.append({name : record.birthday.value})
+                    upcoming_birthdays.append({record.name.value : record.birthday.value})
             except:
-                return None
+                upcoming_birthdays.append({record.name.value: ''})
         return upcoming_birthdays

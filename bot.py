@@ -89,7 +89,7 @@ def show_phone(name: str, book: AddressBook):
         if isinstance(record, Record):
             return (f'{name}: {', '.join(phone.value for phone in record.phones)}\n')
         else:
-            raise TypeError("Error: The resulting contact format does not match the expected formatю.n")
+            raise TypeError("Error: The resulting contact format does not match the expected format.n")
     else:
         raise ValueError("Warning: No contact.\n")
 
@@ -144,46 +144,41 @@ def main():
     book = AddressBook()
     #print("Welcome to the assistant bot!")
     while True:
-        for values in get_command():
-            print(f"\nget_command: {values}")
+        user_input = input("Enter a command: ")
+        if (" " not in user_input):
+            user_input = f'{user_input} '
+        command, *args = parse_input(user_input)
 
-            user_input = values
-            #user_input = input("Enter a command: ")
-            #command, *args = parse_input(values)
-            if (" " not in user_input):
-                user_input = f'{user_input} '
-            command, *args = parse_input(user_input)
+        if command in ["close", "exit"]:
+            print("Good bye!")
+            break
 
-            if command in ["close", "exit"]:
-                print("Good bye!")
-                break
+        elif command == "hello":
+            print("How can I help you?")
 
-            elif command == "hello":
-                print("How can I help you?")
+        elif command == "add":
+            print(add_contact(args, book))
 
-            elif command == "add":
-                print(add_contact(args, book))
+        elif command == "change":
+            print(change_contact(args, book))
 
-            elif command == "change":
-                print(change_contact(args, book))
+        elif command == "phone":
+            print(show_phone(args[0], book))
 
-            elif command == "phone":
-                print(show_phone(args[0], book))
+        elif command == "all":
+            print(show_all(book), '\n')
 
-            elif command == "all":
-                print(show_all(book), '\n')
+        elif command == "add-birthday":
+            add_birthday(args, book)
 
-            elif command == "add-birthday":
-                add_birthday(args, book)
+        elif command == "show-birthday":
+            print(show_birthday(args, book))
 
-            elif command == "show-birthday":
-                print(show_birthday(args, book))
+        elif command == "birthdays":
+            print(show_birthdays(book))
 
-            elif command == "birthdays":
-                print(show_birthdays(book))
-
-            else:
-                print("Invalid command.")
+        else:
+            print("Invalid command.")
         break
     
 

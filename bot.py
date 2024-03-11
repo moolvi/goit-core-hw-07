@@ -176,10 +176,9 @@ def main():
 
         elif command == "birthdays":
             print(show_birthdays(book))
-
+        
         else:
             print("Invalid command.")
-        break
     
 
 if __name__ == "__main__":
